@@ -1,0 +1,21 @@
+{
+  "name": "lsv/sysorbapi",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Martin Aarhof",
+      "email": "martin.aarhof@gmail.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "~5.0",
+    "coderockr/php-query": "dev-master",
+    "doctrine/collections": "~1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Lsv\\SysorbApi\\": "src/"
+    }
+  }
+}
