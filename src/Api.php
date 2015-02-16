@@ -1,47 +1,63 @@
 <?php
+/**
+ * This file is part of the Lsv\SysorbApi
+ */
 namespace Lsv\SysorbApi;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 
+/**
+ * Api for parsing sysorb information
+ *
+ * @author Martin Aarhof <martin.aarhof@gmail.com>
+ */
 class Api
 {
 
     /**
+     * Base url to sysorb
      * @var string
      */
     private $url;
 
     /**
+     * Username to sysorb
      * @var string
      */
     private $username;
 
     /**
+     * Password to sysorb
      * @var string
      */
     private $password;
 
     /**
+     * Domain to sysorb
      * @var string
      */
     private $domain;
 
     /**
+     * HTTP client
      * @var Client
      */
     private $client;
 
     /**
+     * Cookie holder
      * @var CookieJar
      */
     private $cookieJar;
 
     /**
-     * @param string $baseurl
-     * @param string $username
-     * @param string $password
-     * @param string $domain
+     * Construct
+     *
+     * @param string $baseurl : Baseurl to sysorb
+     * @param string $username : Username to sysorb
+     * @param string $password : Password to sysorb
+     * @param string $domain : Domain to sysorb
      */
     public function __construct($baseurl, $username, $password, $domain)
     {
@@ -55,7 +71,9 @@ class Api
     }
 
     /**
-     * @param Client $client
+     * Set another client
+     *
+     * @param Client $client : HTTP client to fetch the data
      * @return Api
      */
     public function setClient(Client $client)
@@ -65,7 +83,9 @@ class Api
     }
 
     /**
-     * @param CookieJar $jar
+     * Set another cookie jar
+     *
+     * @param CookieJar $jar : Cookie jar to keep login when parsing a server
      * @return Api
      */
     public function setCookieJar(CookieJar $jar)
@@ -75,83 +95,86 @@ class Api
     }
 
     /**
+     * Parse servers
+     *
      * @return ServerEntity[]
      */
     public function parse()
     {
-        $data = $this->login();
-
-        $html = \phpQuery::newDocumentHTML($data);
-        $servers = $html->find('table.optiontree > tr:not(:last)');
-        $i = 0;
-
+        $html = \phpQuery::newDocumentHTML($this->login());
+        $trline = 0;
         $statusses = [];
-        foreach($servers as $server) {
-            if (++$i < 3) continue;
 
-            $errorParsed = false;
-
-            $tds = pq($server)->find('> td');
-            $s = 0;
-
-            $entity = new ServerEntity();
-            foreach($tds as $td) {
-                switch(++$s) {
-                    case 3:
-                        $link = pq($td)->find('a')->attr('href');
-                        $entity->setName(pq($td)->text());
-                        break;
-                    case 5:
-                        $entity->setNetworkStatus($this->parseImage(pq($td)));
-                        if ($entity->getNetworkStatus() > ServerEntity::OK_STATUS && ! $errorParsed && isset($link)) {
-                            $entity->setErrors($this->parseError($link));
-                            $errorParsed = true;
-                        }
-                        break;
-                    case 7:
-                        $entity->setCheckinStatus($this->parseImage(pq($td)));
-                        if ($entity->getCheckinStatus() > ServerEntity::OK_STATUS && ! $errorParsed && isset($link)) {
-                            $entity->setErrors($this->parseError($link));
-                            $errorParsed = true;
-                        }
-                        break;
-                    case 9:
-                        $entity->setAgentStatus($this->parseImage(pq($td)));
-                        if ($entity->getAgentStatus() > ServerEntity::OK_STATUS && ! $errorParsed && isset($link)) {
-                            $entity->setErrors($this->parseError($link));
-                            $errorParsed = true;
-                        }
-                        break;
-                    default:
-                        continue;
-                }
+        foreach ($html->find('table.optiontree > tr:not(:last)') as $server) {
+            if (++$trline < 3) {
+                continue;
             }
 
-            $statusses[] = $entity;
-
+            $statusses[] = $this->parseServerLine($server);
         }
 
         return $statusses;
     }
 
     /**
-     * @param string $link
+     * Parse the server info line
+     *
+     * @param string $server : The HTML for the server status
+     * @return ServerEntity
+     */
+    private function parseServerLine($server)
+    {
+        $tabletd = 0;
+        $entity = new ServerEntity();
+        foreach (pq($server)->find('> td') as $td) {
+            switch (++$tabletd) {
+                case 3:
+                    $link = pq($td)->find('a')->attr('href');
+                    $entity->setName(pq($td)->text());
+                    break;
+                case 5:
+                    $entity->setNetworkStatus($this->parseImage(pq($td)));
+                    break;
+                case 7:
+                    $entity->setCheckinStatus($this->parseImage(pq($td)));
+                    break;
+                case 9:
+                    $entity->setAgentStatus($this->parseImage(pq($td)));
+                    break;
+                default:
+                    continue;
+            }
+        }
+
+        if (isset($link) && $entity->hasError()) {
+            $entity->setErrors($this->parseError($link));
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Parse erorrs
+     *
+     * @param string $link : Link to the server information page
      * @return ErrorEntity[]
      */
     private function parseError($link)
     {
         $html = \phpQuery::newDocumentHTML($this->loadStatusPage($link));
         $trs = $html->find('table.checklisting > tr:not(:last)');
-        $i = 0;
+        $tabletd = 0;
 
         $errors = [];
-        foreach($trs as $tr) {
-            if (++$i < 4) continue;
+        foreach ($trs as $tr) {
+            if (++$tabletd < 4) {
+                continue;
+            }
 
             $tds = pq($tr)->find('> td');
             $s = 0;
-            foreach($tds as $td) {
-                switch(++$s) {
+            foreach ($tds as $td) {
+                switch (++$s) {
                     default:
                         continue;
                     case 1:
@@ -175,12 +198,16 @@ class Api
                 ;
                 $errors[] = $e;
             }
-
         }
 
         return $errors;
     }
 
+    /**
+     * Do the login
+     *
+     * @return string
+     */
     private function login()
     {
         $response = $this->client->post($this->url . '/index.cgi?path=1', [
@@ -197,6 +224,12 @@ class Api
         return $body;
     }
 
+    /**
+     * Load the status page for the server with error or warning
+     *
+     * @param string $link : Link to the server information page
+     * @return string
+     */
     private function loadStatusPage($link)
     {
         $response = $this->client->post($this->url . '/' . $link, [
@@ -205,10 +238,16 @@ class Api
         return (string)$response->getBody();
     }
 
+    /**
+     * Parse the status icon
+     *
+     * @param \phpQueryObject $image : Get the status from a image src
+     * @return int
+     */
     private function parseImage(\phpQueryObject $image)
     {
         $src = $image->find('img')->attr('src');
-        switch($src) {
+        switch ($src) {
             default:
                 return -1;
             case 'unknown_lamp.png':
@@ -223,5 +262,4 @@ class Api
                 return ServerEntity::ERROR_STATUS;
         }
     }
-
 }

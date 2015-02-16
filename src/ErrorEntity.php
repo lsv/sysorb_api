@@ -1,25 +1,38 @@
 <?php
+/**
+ * This file is part of the Lsv\SysorbApi
+ */
 namespace Lsv\SysorbApi;
 
+/**
+ * Error entity, holds the error for a server
+ *
+ * @author Martin Aarhof <martin.aarhof@gmail.com>
+ */
 class ErrorEntity
 {
 
     /**
+     * Error code
      * @var string
      */
     private $code;
 
     /**
+     * Error message
      * @var string
      */
     private $message;
 
     /**
+     * Error status
      * @var string
      */
     private $status;
 
     /**
+     * Get the error code
+     *
      * @return string
      */
     public function getCode()
@@ -28,7 +41,9 @@ class ErrorEntity
     }
 
     /**
-     * @param string $code
+     * Set the error code
+     *
+     * @param string $code : The error code
      * @return ErrorEntity
      */
     public function setCode($code)
@@ -38,6 +53,8 @@ class ErrorEntity
     }
 
     /**
+     * Get the error message
+     *
      * @return string
      */
     public function getMessage()
@@ -46,7 +63,9 @@ class ErrorEntity
     }
 
     /**
-     * @param string $message
+     * Set the error message
+     *
+     * @param string $message : Error message
      * @return ErrorEntity
      */
     public function setMessage($message)
@@ -56,6 +75,8 @@ class ErrorEntity
     }
 
     /**
+     * Get the error status
+     *
      * @return string
      */
     public function getStatus()
@@ -64,7 +85,9 @@ class ErrorEntity
     }
 
     /**
-     * @param string $status
+     * Set the serror status
+     *
+     * @param string $status : Error status
      * @return ErrorEntity
      */
     public function setStatus($status)
@@ -72,5 +95,4 @@ class ErrorEntity
         $this->status = $status;
         return $this;
     }
-
 }
