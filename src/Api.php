@@ -235,7 +235,8 @@ class Api
         $response = $this->client->post($this->url . '/' . $link, [
             'cookies' => $this->cookieJar,
         ]);
-        return (string)$response->getBody();
+        $body = (string)$response->getBody();
+        return $body;
     }
 
     /**

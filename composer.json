@@ -21,11 +21,17 @@
     "phpmd/phpmd": "~2.0",
     "pdepend/pdepend": "~2.0",
     "phing/phing": "~2.0",
-    "fabpot/php-cs-fixer": "~1.4"
+    "fabpot/php-cs-fixer": "~1.4",
+    "phpunit/phpunit": "~4.0"
   },
   "autoload": {
     "psr-4": {
       "Lsv\\SysorbApi\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Lsv\\SysorbApiTest\\": "test/"
     }
   }
 }

@@ -9,7 +9,7 @@ namespace Lsv\SysorbApi;
  *
  * @author Martin Aarhof <martin.aarhof@gmail.com>
  */
-class ErrorEntity
+class ErrorEntity implements \Serializable
 {
 
     /**
@@ -29,6 +29,21 @@ class ErrorEntity
      * @var string
      */
     private $status;
+
+    /**
+     * Construct
+     *
+     * @param string|null $code : Set the error code
+     * @param string|null $message : Set the error message
+     * @param string|null $status : Set the serror status
+     */
+    public function __construct($code = null, $message = null, $status = null)
+    {
+        $this->setCode($code)
+            ->setMessage($message)
+            ->setStatus($status)
+        ;
+    }
 
     /**
      * Get the error code
@@ -94,5 +109,33 @@ class ErrorEntity
     {
         $this->status = $status;
         return $this;
+    }
+
+    /**
+     * Serialize the object
+     *
+     * @return string the string representation of the object or null
+     */
+    public function serialize()
+    {
+        return \serialize([
+            'code' => $this->getCode(),
+            'message' => $this->getMessage(),
+            'status' => $this->getStatus()
+        ]);
+    }
+
+    /**
+     * Unserialize the object
+     *
+     * @param string $serialized The string representation of the object.
+     */
+    public function unserialize($serialized)
+    {
+        $unserialized = \unserialize($serialized);
+        $this->setCode($unserialized['code'])
+            ->setMessage($unserialized['message'])
+            ->setStatus($unserialized['status'])
+        ;
     }
 }

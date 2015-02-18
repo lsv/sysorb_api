@@ -4,7 +4,7 @@
     <property name="sourcedir" value="${project.basedir}/src" />
 
     <target name="build"
-            depends="build:clean,build:fixer,build:phpcs,build:phploc,build:phpmd,build:phpcpd,build:phpdoc"
+            depends="build:clean,build:fixer,build:phpcs,build:phploc,build:phpmd,build:phpcpd,build:phpdoc,build:phpunit"
             description="Check code" />
 
     <target name="build:clean" description="Deletes and recreates the 'build'">
@@ -37,6 +37,7 @@
         <exec executable="${bindir}/phpdoc" passthru="false">
             <arg line="-d ${sourcedir}"/>
             <arg line="-t ${builddir}/api"/>
+            <arg line="--template responsive-twig" />
         </exec>
     </target>
 
@@ -61,12 +62,8 @@
     </target>
 
     <!-- Generate phpunit results and code coverage -->
-    <!--
     <target name="build:phpunit" description="Unit test phpDocumentor">
-        <exec executable="php" dir="${project.basedir}" checkreturn="true" passthru="true">
-            <arg line="bin/phpunit" />
-        </exec>
+        <exec command="${bindir}/phpunit -c ${project.basedir} --coverage-html ${builddir}/coverage --log-json ${builddir}/logs/phpunit.json" checkreturn="true" />
     </target>
-    -->
 
 </project>
