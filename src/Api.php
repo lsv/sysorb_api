@@ -190,13 +190,7 @@ class Api
             }
 
             if (isset($code, $message, $status)) {
-                $e = new ErrorEntity();
-                $e
-                    ->setCode($code)
-                    ->setMessage($message)
-                    ->setStatus($status)
-                ;
-                $errors[] = $e;
+                $errors[] = new ErrorEntity($code, $message, $status);
             }
         }
 

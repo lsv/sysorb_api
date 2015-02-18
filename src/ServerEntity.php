@@ -237,18 +237,7 @@ class ServerEntity implements \Serializable
      */
     public function serialize()
     {
-        $errors = [];
-        foreach ($this->getErrors() as $e) {
-            $errors[] = serialize($e);
-        }
-
-        return \serialize([
-            'name' => $this->getName(),
-            'network' => $this->getNetworkStatus(),
-            'agent' => $this->getAgentStatus(),
-            'checkin' => $this->getCheckinStatus(),
-            'errors' => $errors
-        ]);
+        return \serialize($this->toArray());
     }
 
     /**
@@ -272,8 +261,24 @@ class ServerEntity implements \Serializable
 
         $errors = [];
         foreach ($unserialized['errors'] as $e) {
-            $errors[] = unserialize($e);
+            $errors[] = new ErrorEntity($e['code'], $e['message'], $e['status']);
         }
         $this->setErrors($errors);
+    }
+
+    public function toArray()
+    {
+        $errors = [];
+        foreach ($this->getErrors() as $e) {
+            $errors[] = $e->toArray();
+        }
+
+        return [
+            'name' => $this->getName(),
+            'network' => $this->getNetworkStatus(),
+            'agent' => $this->getAgentStatus(),
+            'checkin' => $this->getCheckinStatus(),
+            'errors' => $errors
+        ];
     }
 }

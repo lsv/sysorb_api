@@ -118,11 +118,7 @@ class ErrorEntity implements \Serializable
      */
     public function serialize()
     {
-        return \serialize([
-            'code' => $this->getCode(),
-            'message' => $this->getMessage(),
-            'status' => $this->getStatus()
-        ]);
+        return \serialize($this->toArray());
     }
 
     /**
@@ -137,5 +133,19 @@ class ErrorEntity implements \Serializable
             ->setMessage($unserialized['message'])
             ->setStatus($unserialized['status'])
         ;
+    }
+
+    /**
+     * Gets the object as array
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'code' => $this->getCode(),
+            'message' => $this->getMessage(),
+            'status' => $this->getStatus()
+        ];
     }
 }
